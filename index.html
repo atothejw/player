@@ -64,7 +64,7 @@
 
         // Function to fetch the latest videos from the channel
         function loadVideos() {
-            fetch(`https://www.googleapis.com/youtube/v3/search?key=${apiKey}&channelId=${channelId}&order=date&maxResults=5&part=snippet&type=video`)
+            fetch(`https://www.googleapis.com/youtube/v3/search?key=${apiKey}&channelId=${channelId}&order=date&part=snippet&type=video`)
                 .then(response => response.json())
                 .then(data => {
                     if (data.items && data.items.length > 0) {
