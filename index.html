@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Future House Music Playlist</title>
+    <title>Future House Music Latest Video</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -23,21 +23,20 @@
     </style>
 </head>
 <body>
-    <h1>Future House Music Playlist</h1>
+    <h1>Future House Music Latest Video</h1>
     <div id="player"></div>
 
     <script>
-        const playlistId = 'UU7GqW-o9UuvTnHkA9WM1Uww'; // Replace with the correct playlist ID if available
+        const channelId = 'UU7GqW-o9UuvTnHkA9WM1Uww'; // Future House Music channel ID
         const apiKey = 'AIzaSyBr2Fv1J0M4Qhfkt8b1zPccjI6IRbhNLEs'; // Replace with your YouTube Data API key
-        let videoIndex = 0;
         const playerContainer = document.getElementById('player');
         let player;
 
         function onYouTubeIframeAPIReady() {
-            loadVideo();
+            loadLatestVideo();
         }
 
-        function loadVideo() {
+        function loadLatestVideo() {
             if (!player) {
                 player = new YT.Player('player', {
                     height: '315',
@@ -49,7 +48,7 @@
                     }
                 });
             } else {
-                player.loadVideoById(getNextVideo());
+                fetchLatestVideo();
             }
         }
 
@@ -59,21 +58,22 @@
 
         function onPlayerStateChange(event) {
             if (event.data === YT.PlayerState.ENDED) {
-                loadVideo();
+                console.log("Video ended");
             }
         }
 
-        function getNextVideo() {
-            fetch(`https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&maxResults=1&pageToken=&playlistId=${playlistId}&key=${apiKey}`)
+        function fetchLatestVideo() {
+            fetch(`https://www.googleapis.com/youtube/v3/search?key=${apiKey}&channelId=${channelId}&order=date&maxResults=1`)
                 .then(response => response.json())
                 .then(data => {
                     if (data.items && data.items.length > 0) {
-                        return data.items[videoIndex % data.items.length].snippet.resourceId.videoId;
+                        const latestVideoId = data.items[0].id.videoId;
+                        player.loadVideoById(latestVideoId);
+                    } else {
+                        console.error('No videos found for the channel.');
                     }
-                    console.error('No videos found in the playlist.');
-                    return '';
                 })
-                .catch(error => console.error('Error fetching the video:', error));
+                .catch(error => console.error('Error fetching the latest video:', error));
         }
 
         // Load the IFrame Player API code asynchronously.
