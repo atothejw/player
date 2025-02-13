@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Future House Music Playlist</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 20px;
+        }
+        h1 {
+            color: #333;
+        }
+        iframe {
+            width: 100%;
+            max-width: 560px;
+            height: 315px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Future House Music Playlist</h1>
+    <div id="player"></div>
+
+    <script>
+        const playlistId = 'UU7GqW-o9UuvTnHkA9WM1Uww'; // Replace with the correct playlist ID if available
+        const apiKey = 'YOUR_YOUTUBE_API_KEY'; // Replace with your YouTube Data API key
+        let videoIndex = 0;
+        const playerContainer = document.getElementById('player');
+        let player;
+
+        function onYouTubeIframeAPIReady() {
+            loadVideo();
+        }
+
+        function loadVideo() {
+            if (!player) {
+                player = new YT.Player('player', {
+                    height: '315',
+                    width: '560',
+                    videoId: '',
+                    events: {
+                        'onReady': onPlayerReady,
+                        'onStateChange': onPlayerStateChange
+                    }
+                });
+            } else {
+                player.loadVideoById(getNextVideo());
+            }
+        }
+
+        function onPlayerReady(event) {
+            event.target.playVideo();
+        }
+
+        function onPlayerStateChange(event) {
+            if (event.data === YT.PlayerState.ENDED) {
+                loadVideo();
+            }
+        }
+
+        function getNextVideo() {
+            fetch(`https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&maxResults=1&pageToken=&playlistId=${playlistId}&key=${apiKey}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.items && data.items.length > 0) {
+                        return data.items[videoIndex % data.items.length].snippet.resourceId.videoId;
+                    }
+                    console.error('No videos found in the playlist.');
+                    return '';
+                })
+                .catch(error => console.error('Error fetching the video:', error));
+        }
+
+        // Load the IFrame Player API code asynchronously.
+        const tag = document.createElement('script');
+        tag.src = "https://www.youtube.com/iframe_api";
+        const firstScriptTag = document.getElementsByTagName('script')[0];
+        firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+    </script>
+</body>
+</html>
