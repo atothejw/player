@@ -63,7 +63,7 @@
         }
 
         function fetchLatestVideo() {
-            fetch(`https://www.googleapis.com/youtube/v3/search?key=${apiKey}&channelId=${channelId}&order=date&maxResults=1`)
+            fetch(`https://www.googleapis.com/youtube/v3/search?key=${apiKey}&channelId=${channelId}&order=date&maxResults=1&part=snippet`)
                 .then(response => response.json())
                 .then(data => {
                     if (data.items && data.items.length > 0) {
