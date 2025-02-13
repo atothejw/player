@@ -20,60 +20,115 @@
             height: 315px;
             margin-bottom: 20px;
         }
+        .button-container {
+            margin-top: 20px;
+            text-align: center;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            cursor: pointer;
+            margin: 0 10px;
+        }
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
     </style>
 </head>
 <body>
     <h1>Future House Music Latest Video</h1>
     <div id="player"></div>
+    <div class="button-container">
+        <button id="prevBtn" onclick="loadPrevVideo()">Vorige</button>
+        <button id="nextBtn" onclick="loadNextVideo()">Volgende</button>
+    </div>
 
     <script>
         const channelId = 'UCXvSeBDvzmPO05k-0RyB34w'; // Future House Music channel ID
-        const apiKey = 'AIzaSyBr2Fv1J0M4Qhfkt8b1zPccjI6IRbhNLEs'; // Replace with your YouTube Data API key
-        const playerContainer = document.getElementById('player');
+        const apiKey = 'AIzaSyBr2Fv1J0M4Qhfkt8b1zPccjI6IRbhNLEs'; // Your YouTube API key
+        let videoIds = []; // Array to store video IDs
+        let currentVideoIndex = 0; // Track the current video index
         let player;
 
+        // Function to load the YouTube Iframe API
         function onYouTubeIframeAPIReady() {
-            loadLatestVideo();
+            loadVideos();
         }
 
-        function loadLatestVideo() {
+        // Function to fetch the latest videos from the channel
+        function loadVideos() {
+            fetch(`https://www.googleapis.com/youtube/v3/search?key=${apiKey}&channelId=${channelId}&order=date&maxResults=5&part=snippet&type=video`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.items && data.items.length > 0) {
+                        // Populate the videoIds array
+                        videoIds = data.items.map(item => item.id.videoId);
+                        if (videoIds.length > 0) {
+                            loadVideo(videoIds[currentVideoIndex]); // Load the first video
+                        } else {
+                            console.error('No videos found for the channel.');
+                        }
+                    } else {
+                        console.error('No videos found for the channel.');
+                    }
+                })
+                .catch(error => console.error('Error fetching videos:', error));
+        }
+
+        // Function to load a video by its ID
+        function loadVideo(videoId) {
             if (!player) {
                 player = new YT.Player('player', {
                     height: '315',
                     width: '560',
-                    videoId: '',
+                    videoId: videoId,
                     events: {
                         'onReady': onPlayerReady,
                         'onStateChange': onPlayerStateChange
                     }
                 });
             } else {
-                fetchLatestVideo();
+                player.loadVideoById(videoId);
             }
         }
 
+        // Function to handle player readiness
         function onPlayerReady(event) {
             event.target.playVideo();
         }
 
+        // Function to handle state changes (e.g., video end)
         function onPlayerStateChange(event) {
             if (event.data === YT.PlayerState.ENDED) {
                 console.log("Video ended");
             }
         }
 
-        function fetchLatestVideo() {
-            fetch(`https://www.googleapis.com/youtube/v3/search?key=${apiKey}&channelId=${channelId}&order=date&maxResults=1&part=snippet`)
-                .then(response => response.json())
-                .then(data => {
-                    if (data.items && data.items.length > 0) {
-                        const latestVideoId = data.items[0].id.videoId;
-                        player.loadVideoById(latestVideoId);
-                    } else {
-                        console.error('No videos found for the channel.');
-                    }
-                })
-                .catch(error => console.error('Error fetching the latest video:', error));
+        // Function to load the next video
+        function loadNextVideo() {
+            if (currentVideoIndex < videoIds.length - 1) {
+                currentVideoIndex++;
+                loadVideo(videoIds[currentVideoIndex]);
+            } else {
+                console.log('This is the last video.');
+            }
+        }
+
+        // Function to load the previous video
+        function loadPrevVideo() {
+            if (currentVideoIndex > 0) {
+                currentVideoIndex--;
+                loadVideo(videoIds[currentVideoIndex]);
+            } else {
+                console.log('This is the first video.');
+            }
         }
 
         // Load the IFrame Player API code asynchronously.
